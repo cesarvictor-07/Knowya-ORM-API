@@ -10,6 +10,7 @@ import com.knowya.knowya.entity.Usuario;
 import com.knowya.knowya.repository.UsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -45,13 +46,18 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
-    public boolean eliminar(Integer id) {
+    @Transactional
+    public boolean eliminar(String emailAutenticado) {
 
-        if (!usuarioRepository.existsById(id)) {
+        Optional<Usuario> resultado =
+                usuarioRepository.findByEmail(emailAutenticado);
+
+        if (resultado.isEmpty()) {
             return false;
         }
 
-        usuarioRepository.deleteById(id);
+        usuarioRepository.delete(resultado.get());
+
         return true;
     }
 
@@ -69,20 +75,23 @@ public class UsuarioService {
 
     public UsuarioResponseDTO registrar(UsuarioRegistroDTO datosUsuario) {
 
-        if (usuarioRepository.existsByEmail(datosUsuario.getEmail())) {
+        String email = datosUsuario.getEmail().trim();
+        String userName = datosUsuario.getUserName().trim();
+
+        if (usuarioRepository.existsByEmail(email)) {
             throw new IllegalArgumentException(
                     "El correo electrónico ya está registrado");
         }
 
-        if (usuarioRepository.existsByUserName(datosUsuario.getUserName())) {
+        if (usuarioRepository.existsByUserName(userName)) {
             throw new IllegalArgumentException(
                     "El nombre de usuario ya está registrado");
         }
 
         Usuario usuario = new Usuario();
 
-        usuario.setUserName(datosUsuario.getUserName());
-        usuario.setEmail(datosUsuario.getEmail());
+        usuario.setUserName(userName);
+        usuario.setEmail(email);
 
         usuario.setPassword(
                 passwordEncoder.encode(datosUsuario.getPassword()));
@@ -96,7 +105,7 @@ public class UsuarioService {
     public AuthResponseDTO login(UsuarioLoginDTO datosLogin) {
 
         Usuario usuario = usuarioRepository
-                .findByEmail(datosLogin.getEmail())
+                .findByEmail(datosLogin.getEmail().trim())
                 .orElseThrow(() -> new IllegalArgumentException(
                         "El correo electrónico o la contraseña son incorrectos"
                 ));
@@ -132,31 +141,33 @@ public class UsuarioService {
     }
 
     public Optional<UsuarioResponseDTO> actualizar(
-            Integer id,
+            String emailAutenticado,
             UsuarioActualizacionDTO datosUsuario) {
 
-        Optional<Usuario> resultado = usuarioRepository.findById(id);
+        Optional<Usuario> resultado =
+                usuarioRepository.findByEmail(emailAutenticado);
 
         if (resultado.isEmpty()) {
             return Optional.empty();
         }
 
-        if (usuarioRepository.existsByEmailAndIdUserNot(
-                datosUsuario.getEmail(), id)) {
+        Usuario usuarioExistente = resultado.get();
+        Integer id = usuarioExistente.getIdUser();
+        String email = datosUsuario.getEmail().trim();
+        String userName = datosUsuario.getUserName().trim();
+
+        if (usuarioRepository.existsByEmailAndIdUserNot(email, id)) {
             throw new IllegalArgumentException(
                     "El correo electrónico ya está registrado");
         }
 
-        if (usuarioRepository.existsByUserNameAndIdUserNot(
-                datosUsuario.getUserName(), id)) {
+        if (usuarioRepository.existsByUserNameAndIdUserNot(userName, id)) {
             throw new IllegalArgumentException(
                     "El nombre de usuario ya está registrado");
         }
 
-        Usuario usuarioExistente = resultado.get();
-
-        usuarioExistente.setUserName(datosUsuario.getUserName());
-        usuarioExistente.setEmail(datosUsuario.getEmail());
+        usuarioExistente.setUserName(userName);
+        usuarioExistente.setEmail(email);
         usuarioExistente.setDescripcion(datosUsuario.getDescripcion());
 
         Usuario usuarioActualizado =

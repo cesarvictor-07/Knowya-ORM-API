@@ -25,7 +25,7 @@ public class Chat {
     @Column(name = "activo", nullable = false)
     private Boolean activo;
 
-    @OneToMany(mappedBy = "chat")
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.REMOVE)
     private List<Mensaje> mensajes = new ArrayList<>();
 
     public Chat() {

@@ -27,22 +27,22 @@ public class Usuario {
     @Column(name = "descripcion", length = 255)
     private String descripcion;
 
-    @OneToMany(mappedBy = "usuarioOrigen")
+    @OneToMany(mappedBy = "usuarioOrigen", cascade = CascadeType.REMOVE)
     private List<Interaccion> interaccionesEnviadas = new ArrayList<>();
 
-    @OneToMany(mappedBy = "usuarioDestino")
+    @OneToMany(mappedBy = "usuarioDestino", cascade = CascadeType.REMOVE)
     private List<Interaccion> interaccionesRecibidas = new ArrayList<>();
 
-    @OneToMany(mappedBy = "usuario1")
+    @OneToMany(mappedBy = "usuario1", cascade = CascadeType.REMOVE)
     private List<Chat> chatsComoUsuario1 = new ArrayList<>();
 
-    @OneToMany(mappedBy = "usuario2")
+    @OneToMany(mappedBy = "usuario2", cascade = CascadeType.REMOVE)
     private List<Chat> chatsComoUsuario2 = new ArrayList<>();
 
-    @OneToMany(mappedBy = "usuario")
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.REMOVE)
     private List<Mensaje> mensajesEnviados = new ArrayList<>();
 
-    @OneToMany(mappedBy = "usuario")
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.REMOVE)
     private List<ConsultaSoporte> consultasSoporte = new ArrayList<>();
 
     public Usuario() {
