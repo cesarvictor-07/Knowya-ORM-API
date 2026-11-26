@@ -44,7 +44,6 @@ public class InteraccionService {
             );
         }
 
-        // Impedir que un usuario muestre interés en sí mismo
         if (idOrigen.equals(idDestino)) {
             throw new IllegalArgumentException(
                     "No puedes mostrar interés en tu propio usuario."
@@ -61,21 +60,48 @@ public class InteraccionService {
                         "El usuario destinatario no existe."
                 ));
 
-        if (existeInteraccion(idOrigen, idDestino)) {
-            throw new IllegalStateException(
-                    "Ya has mostrado interés en este usuario anteriormente."
-            );
+        Optional<Interaccion> interaccionExistente =
+                interaccionRepository
+                        .findByUsuarioOrigen_IdUserAndUsuarioDestino_IdUser(
+                                idOrigen,
+                                idDestino
+                        );
+
+        Interaccion interaccionGuardada;
+
+        if (interaccionExistente.isPresent()) {
+
+            Interaccion interaccion = interaccionExistente.get();
+
+            if (ESTADO_ACTIVA.equals(interaccion.getEstado())) {
+                throw new IllegalStateException(
+                        "Ya has mostrado interés en este usuario anteriormente."
+                );
+            }
+
+            if (!ESTADO_RETIRADA.equals(interaccion.getEstado())) {
+                throw new IllegalStateException(
+                        "La interacción tiene un estado no válido."
+                );
+            }
+
+            interaccion.setEstado(ESTADO_ACTIVA);
+            interaccion.setFechaInteraccion(LocalDateTime.now());
+
+            interaccionGuardada = interaccionRepository.save(interaccion);
+
+        } else {
+
+            Interaccion nuevaInteraccion = new Interaccion();
+
+            nuevaInteraccion.setUsuarioOrigen(origen);
+            nuevaInteraccion.setUsuarioDestino(destino);
+            nuevaInteraccion.setFechaInteraccion(LocalDateTime.now());
+            nuevaInteraccion.setEstado(ESTADO_ACTIVA);
+
+            interaccionGuardada =
+                    interaccionRepository.save(nuevaInteraccion);
         }
-
-        Interaccion interaccion = new Interaccion();
-
-        interaccion.setUsuarioOrigen(origen);
-        interaccion.setUsuarioDestino(destino);
-        interaccion.setFechaInteraccion(LocalDateTime.now());
-        interaccion.setEstado(ESTADO_ACTIVA);
-
-        Interaccion interaccionGuardada =
-                interaccionRepository.save(interaccion);
 
         boolean existeCoincidencia =
                 interaccionRepository

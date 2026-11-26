@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/knowya.iml" filepath="$PROJECT_DIR$/.idea/knowya.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Knowya(Backend).iml" filepath="$PROJECT_DIR$/.idea/Knowya(Backend).iml" />
+      <module fileurl="file://$PROJECT_DIR$/knowya/knowya.iml" filepath="$PROJECT_DIR$/knowya/knowya.iml" />
     </modules>
   </component>
 </project>
